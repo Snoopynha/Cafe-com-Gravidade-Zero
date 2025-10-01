@@ -102,3 +102,6 @@ class FaseEditor(Cena):
         info = "Pressione '1' para Cadeira, '2' para Planta | ESPAÇO para colocar | ESC para cancelar"
         txt = fonte.render(info, True, (255, 255, 255))
         tela.blit(txt, (10, 10))
+
+_______
+
