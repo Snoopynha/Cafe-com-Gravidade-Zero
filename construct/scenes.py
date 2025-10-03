@@ -29,6 +29,17 @@ class Button:
         if self.rect.collidepoint(mouse) and self.acao:
             self.acao()
 
+class BotaoInventario:
+    def __init__(self, item_key, item_info, pos):
+        self.item_key = item_key 
+        self.info = item_info
+        
+        self.imagem = py.transform.scale(py.image.load(item_info["img_path"]).convert_alpha(), (50, 50))
+        self.rect = self.imagem.get_rect(topleft=pos)
+
+    def desenhar(self, tela):
+        tela.blit(self.imagem, self.rect)
+
 class Cena:
     def __init__(self, game, cor_fundo=(0,0,0)):
         self.game = game
@@ -50,32 +61,44 @@ class Cena:
             
 # ---------------------Classe de Ediçao do Cenario------------------------
 
-# Classe que trata o grid e a colocação/retirada de itens
 class FaseEditavel(Cena):
     def __init__(self, game, cor_fundo=(0, 0, 0)):
         super().__init__(game, cor_fundo)
-        # Define o tamanho dos quadrados do grid
         self.GRID_SIZE = GRID_SIZE
-        # Define como estado padrão 'NORMAL' (onde nenhum item foi selecionado)
-        self.estado = 'NORMAL'
-        # Guarda o objeto qie está selecionado pelo usuário
+        self.estado = 'NORMAL'  # NORMAL, INVENTARIO, POSICIONANDO
         self.objeto_em_mao = None
-        # Lista dos objetos que foram colocados na tela
         self.objetos_do_cenario = []
-        # Um dicionário com todos os itens disponíveis para serem colocados
         self.mapa_da_grade = [[0 for _ in range(GRID_LARGURA)] for _ in range(GRID_ALTURA)]
 
         self.itens_disponiveis = {
-            "malboro": { "img_path": "source/malboro_melancia.png", "tamanho": (1, 1), "anim_path": None}
+            "malboro": { "img_path": "Cafe-com-Gravidade-Zero/source/malboro_melancia.png", "tamanho": (1, 1), "anim_path": None },
+            "gato": { "img_path": "Cafe-com-Gravidade-Zero/source/gato.png", "tamanho": (2, 2), "anim_path": None },
+            "isac": { "img_path": "Cafe-com-Gravidade-Zero/source/isac.png", "tamanho": (5, 3), "anim_path": None }
         }
         self.posicao_valida = False
+        self.botoes_inventario = []
+        self.INVENTARIO_RECT = py.Rect(100, 100, LARGURA - 200, ALTURA - 200)
 
-    # Método que desenha o grid
+    def _criar_botoes_inventario(self):
+        self.botoes_inventario = []
+        padding = 20
+        x_inicial = self.INVENTARIO_RECT.left + padding
+        y_inicial = self.INVENTARIO_RECT.top + padding + 40
+        x, y = x_inicial, y_inicial
+        
+        for key, info in self.itens_disponiveis.items():
+            botao = BotaoInventario(key, info, (x, y))
+            self.botoes_inventario.append(botao)
+            x += botao.rect.width + padding
+            if x + botao.rect.width > self.INVENTARIO_RECT.right:
+                x = x_inicial
+                y += botao.rect.height + padding
+
     def desenhar_grid(self, tela):
         largura, altura = tela.get_size()
-        for x in range(0, largura, self.GRID_SIZE):
+        for x in range(0, largura, GRID_SIZE):
             py.draw.line(tela, (200, 200, 200), (x, 0), (x, altura), 1)
-        for y in range(0, altura, self.GRID_SIZE):
+        for y in range(0, altura, GRID_SIZE):
             py.draw.line(tela, (200, 200, 200), (0, y), (largura, y), 1)
 
     def pode_colocar_aqui(self, grid_x, grid_y, tamanho_obj):
@@ -88,75 +111,75 @@ class FaseEditavel(Cena):
                     return False
         return True
     
-    # Método que trata as ações do usuário
     def update(self, eventos):
         super().update(eventos)
         mouse_x, mouse_y = py.mouse.get_pos()
 
         for e in eventos:
-            # Trata os eventos de teclado
-            if e.type == py.KEYDOWN:
-                if self.estado == 'NORMAL':
-                    item_selecionado = None
-                    if e.key == py.K_1: item_selecionado = "malboro"
-                    if e.key == py.K_2: item_selecionado = "mesa"
-                    
-                    if item_selecionado and item_selecionado in self.itens_disponiveis:
-                        self.estado = 'POSICIONANDO'
-                        info = self.itens_disponiveis[item_selecionado]
-                        w = info["tamanho"][0] * self.GRID_SIZE
-                        h = info["tamanho"][1] * self.GRID_SIZE
-                        
-                        self.objeto_em_mao = Game_Obj(0, 0, w, h, info["img_path"], info["tamanho"], info.get("anim_path"))
-                        self.objeto_em_mao.item_key = item_selecionado
-                        self.objeto_em_mao.image.set_alpha(150)
+            # --- Estado NORMAL ---
+            if self.estado == 'NORMAL':
+                if e.type == py.KEYDOWN and e.key == py.K_e:
+                    self.estado = 'INVENTARIO'
+                    self._criar_botoes_inventario()
 
-                elif self.estado == 'POSICIONANDO':
-                    if e.key == py.K_ESCAPE:
-                        self.estado = 'NORMAL'
-                        self.objeto_em_mao = None
-                        
-            # Trata os eventos de mouse
-            if e.type == py.MOUSEBUTTONDOWN:
-                if self.estado == 'POSICIONANDO' and e.button == 1 and self.objeto_em_mao and self.posicao_valida:
-                    info = self.itens_disponiveis[self.objeto_em_mao.item_key]
-                    x, y = self.objeto_em_mao.rect.topleft
-                    w, h = self.objeto_em_mao.rect.size
-
-                    novo_objeto = Game_Obj(x, y, w, h, info["img_path"], info["tamanho"], info.get("anim_path"))
-                    novo_objeto.item_key = self.objeto_em_mao.item_key
-                    self.objetos_do_cenario.append(novo_objeto)
-                    
-                    grid_x, grid_y = x // self.GRID_SIZE, y // self.GRID_SIZE
-                    obj_w, obj_h = info["tamanho"]
-                    for row in range(grid_y, grid_y + obj_h):
-                        for col in range(grid_x, grid_x + obj_w):
-                            self.mapa_da_grade[row][col] = 1
-                    
-                    self.estado = 'NORMAL'
-                    self.objeto_em_mao = None
-
-                elif self.estado == 'NORMAL' and e.button == 3: 
+                elif e.type == py.MOUSEBUTTONDOWN and e.button == 3:
                     objetos_a_manter = []
                     for obj in self.objetos_do_cenario:
-                        if obj.rect.collidepoint(e.pos):
+                        if not obj.rect.collidepoint(e.pos):
+                            objetos_a_manter.append(obj)
+                        else:
                             grid_x, grid_y = obj.rect.x // self.GRID_SIZE, obj.rect.y // self.GRID_SIZE
                             obj_w, obj_h = obj.tamanho_grid
                             for row in range(grid_y, grid_y + obj_h):
                                 for col in range(grid_x, grid_x + obj_w):
                                     self.mapa_da_grade[row][col] = 0
-                        else:
-                            objetos_a_manter.append(obj)
                     self.objetos_do_cenario = objetos_a_manter
 
+            # --- Estado INVENTARIO ---
+            elif self.estado == 'INVENTARIO':
+                if e.type == py.KEYDOWN and (e.key == py.K_e or e.key == py.K_ESCAPE):
+                    self.estado = 'NORMAL'
 
-        # Atualiza a posição do item que está sendo posicionado (mantém o item "preso" ao grid)                
+                elif e.type == py.MOUSEBUTTONDOWN and e.button == 1:
+                    for botao in self.botoes_inventario:
+                        if botao.rect.collidepoint(e.pos):
+                            self.estado = 'POSICIONANDO'
+                            info = botao.info
+                            w = info["tamanho"][0] * self.GRID_SIZE
+                            h = info["tamanho"][1] * self.GRID_SIZE
+                            self.objeto_em_mao = Game_Obj(0, 0, w, h, info["img_path"], info["tamanho"], info.get("anim_path"))
+                            self.objeto_em_mao.item_key = botao.item_key
+                            self.objeto_em_mao.image.set_alpha(150)
+                            break
+
+            # --- Estado POSICIONANDO ---
+            elif self.estado == 'POSICIONANDO':
+                if e.type == py.KEYDOWN and e.key == py.K_ESCAPE:
+                    self.estado = 'NORMAL'
+                    self.objeto_em_mao = None
+
+                elif e.type == py.MOUSEBUTTONDOWN and e.button == 1 and self.objeto_em_mao and self.posicao_valida:
+                    info = self.itens_disponiveis[self.objeto_em_mao.item_key]
+                    x, y = self.objeto_em_mao.rect.topleft
+                    w, h = self.objeto_em_mao.rect.size
+                    novo_objeto = Game_Obj(x, y, w, h, info["img_path"], info["tamanho"], info.get("anim_path"))
+                    self.objetos_do_cenario.append(novo_objeto)
+
+                    grid_x, grid_y = x // self.GRID_SIZE, y // self.GRID_SIZE
+                    obj_w, obj_h = info["tamanho"]
+                    for row in range(grid_y, grid_y + obj_h):
+                        for col in range(grid_x, grid_x + obj_w):
+                            self.mapa_da_grade[row][col] = 1
+
+                    self.estado = 'NORMAL'
+                    self.objeto_em_mao = None
+
+        # Snap
         if self.estado == 'POSICIONANDO' and self.objeto_em_mao:
             snap_x = (mouse_x // self.GRID_SIZE) * self.GRID_SIZE
             snap_y = (mouse_y // self.GRID_SIZE) * self.GRID_SIZE
             self.objeto_em_mao.rect.topleft = (snap_x, snap_y)
-            
-            # Valida a posição para o feedback visual
+
             grid_x, grid_y = snap_x // self.GRID_SIZE, snap_y // self.GRID_SIZE
             self.posicao_valida = self.pode_colocar_aqui(grid_x, grid_y, self.objeto_em_mao.tamanho_grid)
 
@@ -169,15 +192,32 @@ class FaseEditavel(Cena):
             self.desenhar_grid(tela)
             if self.objeto_em_mao:
                 self.objeto_em_mao.desenhar(tela)
-                # ADICIONADO DE VOLTA: Feedback visual verde/vermelho
                 cor = (0, 255, 0, 100) if self.posicao_valida else (255, 0, 0, 100)
                 feedback_surf = py.Surface(self.objeto_em_mao.rect.size, py.SRCALPHA)
                 feedback_surf.fill(cor)
                 tela.blit(feedback_surf, self.objeto_em_mao.rect.topleft)
-        
-        info = "MODO EDIÇÃO: [1] Pega Item | Clique Esq: Coloca | Clique Dir: Remove"
+
+        elif self.estado == 'INVENTARIO':
+            fundo_inventario = py.Surface(self.INVENTARIO_RECT.size, py.SRCALPHA)
+            fundo_inventario.fill((10, 20, 40, 220))
+            tela.blit(fundo_inventario, self.INVENTARIO_RECT.topleft)
+            py.draw.rect(tela, (100, 120, 150), self.INVENTARIO_RECT, 3)
+
+            txt_titulo = fonte.render("Inventário", True, (255, 255, 255))
+            tela.blit(txt_titulo, (self.INVENTARIO_RECT.centerx - txt_titulo.get_width() // 2, self.INVENTARIO_RECT.top + 15))
+
+            for botao in self.botoes_inventario:
+                botao.desenhar(tela)
+
+        info = ""
+        if self.estado == 'NORMAL': info = "Pressione [E] para abrir o inventário"
+        elif self.estado == 'INVENTARIO': info = "Pressione [E] ou [ESC] para fechar"
+        elif self.estado == 'POSICIONANDO': info = "Clique para colocar | [ESC] para cancelar"
+
         txt_ajuda = fonte.render(info, True, (255, 255, 255))
         tela.blit(txt_ajuda, (10, 10))
+
+# ---------------------Demais Cenas------------------------
 
 class Menu(Cena):
     def __init__(self, game):
@@ -189,7 +229,6 @@ class Menu(Cena):
                                    (200,50,50), (255,100,100),
                                    lambda: setattr(game, "running", False)))
 
-# As Fases são herdeiras da classe FaseEditavel
 class Fase1(FaseEditavel):
     def __init__(self, game):
         super().__init__(game, (217, 214, 71))
