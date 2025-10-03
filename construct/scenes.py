@@ -174,9 +174,10 @@ class FaseEditavel(Cena):
 
         # Itens disponíveis para colocar no cenário
         self.itens_disponiveis = {
-            "malboro": { "img_path": "Cafe-com-Gravidade-Zero/source/malboro_melancia.png", "tamanho": (1, 1), "anim_path": None },
-            "gato": { "img_path": "Cafe-com-Gravidade-Zero/source/gato.png", "tamanho": (2, 2), "anim_path": None },
-            "isac": { "img_path": "Cafe-com-Gravidade-Zero/source/isac.png", "tamanho": (5, 3), "anim_path": None }
+            "malboro": { "img_path": "source/malboro_melancia.png", "tamanho": (1, 1), "anim_path": None },
+            "gato": { "img_path": "source/gato.png", "tamanho": (2, 2), "anim_path": None },
+            "isac": { "img_path": "source/isac.png", "tamanho": (5, 3), "anim_path": None },
+            "momo": { "img_path": "source/momo.png", "tamanho": (1, 2), "anim_path": None }
         }
         self.posicao_valida = False
         self.botoes_inventario = []
