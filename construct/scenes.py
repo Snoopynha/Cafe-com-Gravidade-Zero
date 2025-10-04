@@ -405,7 +405,7 @@ class Menu(Cena):
 class Selecao_Habitat(Cena):
     """A tela de seleção de habitat (fase)."""
     def __init__(self, game):
-        super().__init__(game, (141, 45, 237))
+        super().__init__(game, (75, 0, 130))
 
         # Centralização automática
         largura_tela, altura_tela = self.game.tela.get_width(), self.game.tela.get_height()
@@ -413,13 +413,13 @@ class Selecao_Habitat(Cena):
         pos_x_central = (largura_tela - largura_botao) / 2
 
         self.adicionar_botao(Button(x=pos_x_central, y=altura_tela * 0.25, w=largura_botao, h=altura_botao,
-                                   texto="HABITAT 1", cor=(50,150,200), cor_hover=(100,200,255),
+                                   texto="HABITAT 1", cor=(123,104,238), cor_hover=(100,200,255),
                                    acao=lambda: setattr(game, "cena_atual", game.fase1)))
         self.adicionar_botao(Button(x=pos_x_central, y=altura_tela * 0.4, w=largura_botao, h=altura_botao,
-                                   texto="HABITAT 2", cor=(50,150,200), cor_hover=(100,200,255),
+                                   texto="HABITAT 2", cor=(123,104,238), cor_hover=(100,200,255),
                                    acao=lambda: setattr(game, "cena_atual", game.fase2)))
         self.adicionar_botao(Button(x=pos_x_central, y=altura_tela * 0.55, w=largura_botao, h=altura_botao,
-                                   texto="HABITAT 3", cor=(50,150,200), cor_hover=(100,200,255),
+                                   texto="HABITAT 3", cor=(123,104,238), cor_hover=(100,200,255),
                                    acao=lambda: setattr(game, "cena_atual", game.fase3)))
         # Botão de voltar
         self.adicionar_botao(Button(x=30, y=30, imagem_surface=py.transform.scale(py.image.load("source/seta_voltar.png").convert_alpha(), (50, 50)), acao=lambda: setattr(game, "cena_atual", game.menu)))
