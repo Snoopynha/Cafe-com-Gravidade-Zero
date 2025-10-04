@@ -75,6 +75,53 @@ class Button:
             # Executa a ação associada ao botão
             self.acao()
 
+class ImageButton:
+    """Classe de botão que usa uma imagem."""
+    def __init__(self, x, y, imagem, acao):
+        """
+        Inicializa o botão de imagem.
+
+        Args:
+            x, y (int): Posição do canto superior esquerdo do botão.
+            imagem (Surface): A imagem do Pygame a ser usada como botão.
+            acao (function): Função a ser chamada quando o botão é clicado.
+        """
+        self.imagem = imagem
+        self.rect = self.imagem.get_rect(topleft=(x, y))
+        self.acao = acao
+        self.hover = False # Para controlar o efeito de mouse sobre o botão
+
+    def desenhar(self, tela, mouse):
+        """
+        Desenha o botão na tela.
+
+        Args:
+            tela (Surface): A superfície onde o botão será desenhado.
+            mouse (tuple): Posição atual do mouse.
+        """
+        # Verifica se o mouse está sobre o botão
+        self.hover = self.rect.collidepoint(mouse)
+
+        # Adiciona um efeito de "brilho" ou transparência quando o mouse está sobre o botão
+        if self.hover:
+            # Cria uma cópia da imagem para não alterar a original
+            imagem_hover = self.imagem.copy()
+            # Deixa a imagem um pouco mais clara ou transparente (alpha)
+            imagem_hover.fill((50, 50, 50), special_flags=py.BLEND_RGB_ADD) 
+            tela.blit(imagem_hover, self.rect)
+        else:
+            tela.blit(self.imagem, self.rect)
+        
+    def click(self, mouse):
+        """
+        Verifica se o botão foi clicado e executa a ação associada.
+
+        Args:
+            mouse (tuple): Posição do mouse no momento do clique.
+        """
+        if self.rect.collidepoint(mouse) and self.acao:
+            self.acao()
+
 class BotaoInventario:
     """Um botão específico para o inventário , representando um dos itens que podem ser selecionado."""
     def __init__(self, item_key, item_info, pos):
@@ -360,12 +407,20 @@ class FaseEditavel(Cena):
 class Menu(Cena):
     """Tela de menu principal do jogo."""
     def __init__(self, game):
-        super().__init__(game, (30,100,30))
+        super().__init__(game, (0,0,0))
         # O lambda usa setattr para mudar a cena atual do jogo
-        self.adicionar_botao(Button("JOGAR", 300, 200, 200, 60,
-                                   (50,150,200), (100,200,255),
+
+        # Centralização automática
+        largura_tela, altura_tela = self.game.tela.get_width(), self.game.tela.get_height()
+        largura_botao, altura_botao = largura_tela * 0.4, altura_tela // 10
+        espacamento = 20
+        pos_x = (largura_tela - largura_botao) // 2
+        pos_y = (altura_tela - (2 * altura_botao + espacamento)) // 2
+
+        self.adicionar_botao(Button("Jogar", pos_x, pos_y, largura_botao, altura_botao,
+                                   (50,205,50), (0,255,0),
                                    lambda: setattr(game, "cena_atual", game.selecao)))
-        self.adicionar_botao(Button("SAIR", 300, 300, 200, 60,
+        self.adicionar_botao(Button("Sair", pos_x, pos_y + altura_botao + espacamento, largura_botao, altura_botao,
                                    (200,50,50), (255,100,100),
                                    lambda: setattr(game, "running", False)))
 
@@ -373,18 +428,25 @@ class Selecao_Habitat(Cena):
     """A tela de seleção de habitat (fase)."""
     def __init__(self, game):
         super().__init__(game, (141, 45, 237))
-        self.adicionar_botao(Button("HABITATE 1", 300, 150, 200, 60,
+
+        # Centralização automática
+        largura_tela, altura_tela = self.game.tela.get_width(), self.game.tela.get_height()
+        largura_botao, altura_botao = largura_tela * 0.4, altura_tela * 0.1
+        pos_x_central = (largura_tela - largura_botao) / 2
+
+        self.adicionar_botao(Button("HABITATE 1", pos_x_central, 150, largura_botao, altura_botao,
                                    (50,150,200), (100,200,255),
                                    lambda: setattr(game, "cena_atual", game.fase1)))
-        self.adicionar_botao(Button("HABITATE 2", 300, 230, 200, 60,
+        self.adicionar_botao(Button("HABITATE 2", pos_x_central, 230, largura_botao, altura_botao,
                                    (50,150,200), (100,200,255),
                                    lambda: setattr(game, "cena_atual", game.fase2)))
-        self.adicionar_botao(Button("HABITATE 3", 300, 310, 200, 60,
+        self.adicionar_botao(Button("HABITATE 3", pos_x_central, 310, largura_botao, altura_botao,
                                    (50,150,200), (100,200,255),
                                    lambda: setattr(game, "cena_atual", game.fase3)))
-        self.adicionar_botao(Button("VOLTAR", 300, 450, 200, 60,
-                                   (200,50,50), (255,100,100),
-                                   lambda: setattr(game, "cena_atual", game.menu)))
+        # Teste botão de voltar ao menu
+        imagem_seta = py.transform.scale(py.image.load("source/seta_voltar.png").convert_alpha(), (50, 50))
+        self.adicionar_botao(ImageButton(30, 30, imagem_seta, lambda: setattr(game, "cena_atual", game.menu)))
+
     def drawn(self, tela):
         super().drawn(tela)
         txt = fonte.render("Selecione o seu Habitat", True, (10,10,10))

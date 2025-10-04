@@ -8,6 +8,7 @@ relogio = py.time.Clock()
 
 class Game:
     def __init__(self):
+        self.tela = tela
         self.menu = Menu(self)
         self.fase1 = Fase1(self)
         self.fase2 = Fase2(self)
