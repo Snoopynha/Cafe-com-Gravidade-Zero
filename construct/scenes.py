@@ -29,39 +29,64 @@ class ObjetoColocavel:
         tela.blit(self.imagem, self.rect)
 
 class Button:
-    """Classe de botão genérico."""
-    def __init__(self, texto, x, y, w, h, cor, cor_hover, acao):
+    """
+    Classe de botão genérica e unificada.
+    Pode ser um botão retangular com cor ou um botão com imagem.
+    """
+    def __init__(self, x, y, acao, w=0, h=0, texto=None, cor=None, cor_hover=None, imagem_surface=None):
         """
         Inicializa o botão.
 
         Args:
-            texto (str): Texto do botão.
+            texto (str): Texto do botão (opcional).
             x, y (int): Posição do botão.
             w, h (int): Largura e altura do botão.
-            cor (tuple): Cor padrão do botão.
-            cor_hover (tuple): Cor do botão quando o mouse está sobre ele.
+            cor (tuple): Cor padrão do botão (opcional).
+            cor_hover (tuple): Cor do botão quando o mouse está sobre ele (opcional).
+            imagem (Surface): Imagem do botão (opcional).
             acao (function): Função a ser chamada quando o botão é clicado.
         """
-        self.texto = texto
-        self.rect = py.Rect(x, y, w, h)
-        self.cor = cor
-        self.cor_hover = cor_hover
         self.acao = acao
+
+        if imagem_surface is not None:
+            self.tipo = 'imagem'
+            self.imagem = imagem_surface
+            self.rect = self.imagem.get_rect(topleft=(x, y))
+        elif texto is not None:
+            self.tipo = 'retangulo'
+            self.texto = texto
+            self.rect = py.Rect(x, y, w, h)
+            self.cor = cor
+            self.cor_hover = cor_hover
+        else:
+            # Erro se nenhum tipo for especificado
+            raise ValueError("Para criar um botão, você precisa fornecer um 'texto' ou uma 'imagem_surface'.")
 
     def desenhar(self, tela, mouse):
         """
-        Desenha o botão na tela.
+        Desenha o botão na tela, tratando os diferentes tipos de botão.
 
         Args:
             tela (Surface): A superfície onde o botão será desenhado.
             mouse (tuple): Posição atual do mouse.
         """
-        # Muda a cor do botão caso o mouse esteja sobre o botão
-        cor = self.cor_hover if self.rect.collidepoint(mouse) else self.cor
-        py.draw.rect(tela, cor, self.rect)
-        txt = fonte.render(self.texto, True, (255,255,255))
-        # Centraliza o texto no botão
-        tela.blit(txt, (self.rect.x + (self.rect.w - txt.get_width())//2,
+
+        mouse_sobre = self.rect.collidepoint(mouse)
+        if self.tipo == 'imagem':
+            if mouse_sobre:
+                # Adiciona um efeito de "brilho" ou transparência quando o mouse está sobre o botão
+                imagem_hover = self.imagem.copy()
+                imagem_hover.fill((50, 50, 50), special_flags=py.BLEND_RGB_ADD) 
+                tela.blit(imagem_hover, self.rect)
+            else:
+                tela.blit(self.imagem, self.rect)
+        else:
+            # Muda a cor do botão caso o mouse esteja sobre o botão
+            cor = self.cor_hover if self.rect.collidepoint(mouse) else self.cor
+            py.draw.rect(tela, cor, self.rect)
+            txt = fonte.render(self.texto, True, (255,255,255))
+            # Centraliza o texto no botão
+            tela.blit(txt, (self.rect.x + (self.rect.w - txt.get_width())//2,
                         self.rect.y + (self.rect.h - txt.get_height())//2))
         
     def click(self, mouse):
@@ -73,53 +98,6 @@ class Button:
         """
         if self.rect.collidepoint(mouse) and self.acao:
             # Executa a ação associada ao botão
-            self.acao()
-
-class ImageButton:
-    """Classe de botão que usa uma imagem."""
-    def __init__(self, x, y, imagem, acao):
-        """
-        Inicializa o botão de imagem.
-
-        Args:
-            x, y (int): Posição do canto superior esquerdo do botão.
-            imagem (Surface): A imagem do Pygame a ser usada como botão.
-            acao (function): Função a ser chamada quando o botão é clicado.
-        """
-        self.imagem = imagem
-        self.rect = self.imagem.get_rect(topleft=(x, y))
-        self.acao = acao
-        self.hover = False # Para controlar o efeito de mouse sobre o botão
-
-    def desenhar(self, tela, mouse):
-        """
-        Desenha o botão na tela.
-
-        Args:
-            tela (Surface): A superfície onde o botão será desenhado.
-            mouse (tuple): Posição atual do mouse.
-        """
-        # Verifica se o mouse está sobre o botão
-        self.hover = self.rect.collidepoint(mouse)
-
-        # Adiciona um efeito de "brilho" ou transparência quando o mouse está sobre o botão
-        if self.hover:
-            # Cria uma cópia da imagem para não alterar a original
-            imagem_hover = self.imagem.copy()
-            # Deixa a imagem um pouco mais clara ou transparente (alpha)
-            imagem_hover.fill((50, 50, 50), special_flags=py.BLEND_RGB_ADD) 
-            tela.blit(imagem_hover, self.rect)
-        else:
-            tela.blit(self.imagem, self.rect)
-        
-    def click(self, mouse):
-        """
-        Verifica se o botão foi clicado e executa a ação associada.
-
-        Args:
-            mouse (tuple): Posição do mouse no momento do clique.
-        """
-        if self.rect.collidepoint(mouse) and self.acao:
             self.acao()
 
 class BotaoInventario:
@@ -417,12 +395,12 @@ class Menu(Cena):
         pos_x = (largura_tela - largura_botao) // 2
         pos_y = (altura_tela - (2 * altura_botao + espacamento)) // 2
 
-        self.adicionar_botao(Button("Jogar", pos_x, pos_y, largura_botao, altura_botao,
-                                   (50,205,50), (0,255,0),
-                                   lambda: setattr(game, "cena_atual", game.selecao)))
-        self.adicionar_botao(Button("Sair", pos_x, pos_y + altura_botao + espacamento, largura_botao, altura_botao,
-                                   (200,50,50), (255,100,100),
-                                   lambda: setattr(game, "running", False)))
+        self.adicionar_botao(Button(x=pos_x, y=pos_y, w=largura_botao, h=altura_botao, texto="Jogar", 
+                                   cor=(50,205,50), cor_hover=(0,255,0),
+                                   acao=lambda: setattr(game, "cena_atual", game.selecao)))
+        self.adicionar_botao(Button(x=pos_x, y=pos_y + altura_botao + espacamento, w=largura_botao, h=altura_botao,
+                                   texto="Sair", cor=(200,50,50), cor_hover=(255,100,100),
+                                   acao=lambda: setattr(game, "running", False)))
 
 class Selecao_Habitat(Cena):
     """A tela de seleção de habitat (fase)."""
@@ -434,18 +412,17 @@ class Selecao_Habitat(Cena):
         largura_botao, altura_botao = largura_tela * 0.4, altura_tela * 0.1
         pos_x_central = (largura_tela - largura_botao) / 2
 
-        self.adicionar_botao(Button("HABITATE 1", pos_x_central, 150, largura_botao, altura_botao,
-                                   (50,150,200), (100,200,255),
-                                   lambda: setattr(game, "cena_atual", game.fase1)))
-        self.adicionar_botao(Button("HABITATE 2", pos_x_central, 230, largura_botao, altura_botao,
-                                   (50,150,200), (100,200,255),
-                                   lambda: setattr(game, "cena_atual", game.fase2)))
-        self.adicionar_botao(Button("HABITATE 3", pos_x_central, 310, largura_botao, altura_botao,
-                                   (50,150,200), (100,200,255),
-                                   lambda: setattr(game, "cena_atual", game.fase3)))
-        # Teste botão de voltar ao menu
-        imagem_seta = py.transform.scale(py.image.load("source/seta_voltar.png").convert_alpha(), (50, 50))
-        self.adicionar_botao(ImageButton(30, 30, imagem_seta, lambda: setattr(game, "cena_atual", game.menu)))
+        self.adicionar_botao(Button(x=pos_x_central, y=altura_tela * 0.25, w=largura_botao, h=altura_botao,
+                                   texto="HABITAT 1", cor=(50,150,200), cor_hover=(100,200,255),
+                                   acao=lambda: setattr(game, "cena_atual", game.fase1)))
+        self.adicionar_botao(Button(x=pos_x_central, y=altura_tela * 0.4, w=largura_botao, h=altura_botao,
+                                   texto="HABITAT 2", cor=(50,150,200), cor_hover=(100,200,255),
+                                   acao=lambda: setattr(game, "cena_atual", game.fase2)))
+        self.adicionar_botao(Button(x=pos_x_central, y=altura_tela * 0.55, w=largura_botao, h=altura_botao,
+                                   texto="HABITAT 3", cor=(50,150,200), cor_hover=(100,200,255),
+                                   acao=lambda: setattr(game, "cena_atual", game.fase3)))
+        # Botão de voltar
+        self.adicionar_botao(Button(x=30, y=30, imagem_surface=py.transform.scale(py.image.load("source/seta_voltar.png").convert_alpha(), (50, 50)), acao=lambda: setattr(game, "cena_atual", game.menu)))
 
     def drawn(self, tela):
         super().drawn(tela)
