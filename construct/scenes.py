@@ -63,10 +63,10 @@ class Slider:
             self.arrastando = False
         elif evento.type == py.MOUSEMOTION and self.arrastando:
             self._atualizar_valor_pela_pos(evento.pos[0])
-    def desenhar(self, tela, fonte):
+    def desenhar(self, tela, fonte, sufixo_texto=""):
         py.draw.rect(tela, (100, 100, 100), self.rect, border_radius=5)
         py.draw.rect(tela, (200, 200, 200), self.knob_rect, border_radius=8)
-        texto_val = fonte.render(f"{int(self.valor)}%", True, (255, 255, 255))
+        texto_val = fonte.render(f"{int(self.valor)}{sufixo_texto}", True, (255, 255, 255))
         tela.blit(texto_val, (self.rect.right + 15, self.rect.centery - texto_val.get_height() // 2))
 
 class Button:
@@ -436,6 +436,8 @@ class FormularioSelecao(Cena):
     def __init__(self, game):
         self.caminhos_fundo = ["source/fundo_fase1.png","source/fundo_fase2.png","source/fundo_fase3.png"]
         super().__init__(game, (20, 30, 50), image_path=self.caminhos_fundo[0])
+        VOLUME_HABITAT_MINIMO = 500
+        VOLUME_HABITAT_MAXIMO = 3000
         self.fonte_form = py.font.SysFont(None, 32)
         self.habitat_selecionado = 0
         self.habitats_disponiveis = [game.fase1, game.fase2, game.fase3]
@@ -459,7 +461,10 @@ class FormularioSelecao(Cena):
         for i in range(3):
             rect = py.Rect(x_inicial + i * (150 + 20), y_pos, 150, 150)
             self.botoes_habitat_rects.append(rect)
-        self.slider_volume = Slider(largura_tela * 0.2, altura_tela * 0.6, 300, 10, 0, 100, 50)
+        self.slider_volume = Slider(largura_tela * 0.2, altura_tela * 0.6, 300, 10, 
+                                    min_val=VOLUME_HABITAT_MINIMO, 
+                                    max_val=VOLUME_HABITAT_MAXIMO, 
+                                    val_inicial=VOLUME_HABITAT_MINIMO)
         self.adicionar_botao(Button(x=largura_tela * 0.2, y=altura_tela * 0.8, w=150, h=50,
                                    texto="Jogar", cor=(50,205,50), cor_hover=(0,255,0),
                                    acao=self._iniciar_jogo))
@@ -477,9 +482,9 @@ class FormularioSelecao(Cena):
         if self.habitat_selecionado == 0:
             self.inf = "BUTIJAO"
         if self.habitat_selecionado == 1:
-            self.inf = "PIRULA"
-        if self.habitat_selecionado == 2:
             self.inf = "CIRCULAR"
+        if self.habitat_selecionado == 2:
+            self.inf = "PILULA"
         dados_config = { "nome": self.input_nome.texto, "habitat_idx": self.inf, "volume": int(self.slider_volume.valor) }
         with open("config_jogo.json", "w") as f:
             json.dump(dados_config, f, indent=4)
@@ -505,7 +510,7 @@ class FormularioSelecao(Cena):
         txt_volume = self.fonte_form.render("Volume:", True, (255, 255, 255))
         tela.blit(txt_volume, (self.slider_volume.rect.x, self.slider_volume.rect.y - 30))
         self.input_nome.desenhar(tela)
-        self.slider_volume.desenhar(tela, self.fonte_form)
+        self.slider_volume.desenhar(tela, self.fonte_form, sufixo_texto=" m³")
         for i, rect in enumerate(self.botoes_habitat_rects):
             tela.blit(self.imagens_habitat[i], rect)
             if i == self.habitat_selecionado:
@@ -529,12 +534,12 @@ class Fase1(FaseEditavel):
 
 class Fase2(FaseEditavel):
     def __init__(self, game):
-        super().__init__(game, image_path="source/fundo_fase2.png")
+        super().__init__(game, image_path="source/habitat_2_preview.png")
     def drawn(self, tela):
         super().drawn(tela)
 
 class Fase3(FaseEditavel):
     def __init__(self, game):
-        super().__init__(game, image_path="source/fundo_fase3.png")
+        super().__init__(game, image_path="source/habitat_3_preview.png")
     def drawn(self, tela):
         super().drawn(tela)
