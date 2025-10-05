@@ -209,26 +209,26 @@ class FaseEditavel(Cena):
 
         dados_base_itens = { 
             "airlock": { "img_path": "source/itens/airlock_e_suitports.png", "tamanho": (6, 2), "anim_path": None, "nome": "Airlock", "volume": self.calcular_volume((6,2)) },
-            "armario_comida": { "img_path": "source/itens/armario_comida.png", "tamanho": (2, 2), "anim_path": None, "nome": "Armário de Comida", "volume": self.calcular_volume((2,2)) },
-            "armario_pessoal": { "img_path": "source/itens/armario_pessoal.png", "tamanho": (2, 2), "anim_path": None, "nome": "Armário Pessoal", "volume": self.calcular_volume((2,2)) },
-            "cama_capsula": { "img_path": "source/itens/cama_capsula.png", "tamanho": (2, 3), "anim_path": None, "nome": "Cama", "volume": self.calcular_volume((2,3)) },
-            "central_computador_EVA": { "img_path": "source/itens/central_computador_EVA.png", "tamanho": (1, 1), "anim_path": None, "nome": "Central de Computador EVA", "volume": self.calcular_volume((1,1)) },
+            "armario_comida": { "img_path": "source/itens/armario_comida.png", "tamanho": (2, 2), "anim_path": None, "nome": "Food Cabinet", "volume": self.calcular_volume((2,2)) },
+            "armario_pessoal": { "img_path": "source/itens/armario_pessoal.png", "tamanho": (2, 2), "anim_path": None, "nome": "Personal Closet", "volume": self.calcular_volume((2,2)) },
+            "cama_capsula": { "img_path": "source/itens/cama_capsula.png", "tamanho": (2, 3), "anim_path": None, "nome": "Bed", "volume": self.calcular_volume((2,3)) },
+            "central_computador_EVA": { "img_path": "source/itens/central_computador_EVA.png", "tamanho": (1, 1), "anim_path": None, "nome": "EVA Computer Center", "volume": self.calcular_volume((1,1)) },
             "eclss": { "img_path": "source/itens/eclss.png", "tamanho": (2, 2), "anim_path": None, "nome": "ECLSS", "volume": self.calcular_volume((2,2)) },
-            "equipamento_exercicio": { "img_path": "source/itens/equipamento_exercicio.png", "tamanho": (1, 1), "anim_path": None, "nome": "Equipamento de Exercício", "volume": self.calcular_volume((1,1)) },
-            "estacao_pc": { "img_path": "source/itens/estacao_pc.png", "tamanho": (2, 2), "anim_path": None, "nome": "Estação de PC", "volume": self.calcular_volume((2,2)) },
-            "laboratorio": { "img_path": "source/itens/laboratorio.png", "tamanho": (3, 2), "anim_path": None, "nome": "Laboratório", "volume": self.calcular_volume((3,2)) },
-            "mesa" : { "img_path": "source/itens/mesa.png", "tamanho": (2, 2), "anim_path": None, "nome": "Mesa", "volume": self.calcular_volume((2,2)) },
-            "painel_de_controle": { "img_path": "source/itens/painel_de_controle.png", "tamanho": (4, 2), "anim_path": None, "nome": "Painel de Controle", "volume": self.calcular_volume((4,2)) },
-            "pia": { "img_path": "source/itens/pia.png", "tamanho": (1, 1), "anim_path": None, "nome": "Pia", "volume": self.calcular_volume((1,1)) },
-            "porta": { "img_path": "source/itens/porta.png", "tamanho": (1, 2), "anim_path": None, "nome": "Porta", "volume": self.calcular_volume((1,2)) },
-            "privada": { "img_path": "source/itens/privada.png", "tamanho": (1, 1), "anim_path": None, "nome": "Privada", "volume": self.calcular_volume((1,1)) },
+            "equipamento_exercicio": { "img_path": "source/itens/equipamento_exercicio.png", "tamanho": (1, 1), "anim_path": None, "nome": "Exercise Equipment", "volume": self.calcular_volume((1,1)) },
+            "estacao_pc": { "img_path": "source/itens/estacao_pc.png", "tamanho": (2, 2), "anim_path": None, "nome": "PC Station", "volume": self.calcular_volume((2,2)) },
+            "laboratorio": { "img_path": "source/itens/laboratorio.png", "tamanho": (3, 2), "anim_path": None, "nome": "Laboratory", "volume": self.calcular_volume((3,2)) },
+            "mesa" : { "img_path": "source/itens/mesa.png", "tamanho": (2, 2), "anim_path": None, "nome": "Table", "volume": self.calcular_volume((2,2)) },
+            "painel_de_controle": { "img_path": "source/itens/painel_de_controle.png", "tamanho": (4, 2), "anim_path": None, "nome": "Control Panel", "volume": self.calcular_volume((4,2)) },
+            "pia": { "img_path": "source/itens/pia.png", "tamanho": (1, 1), "anim_path": None, "nome": "Sink", "volume": self.calcular_volume((1,1)) },
+            "porta": { "img_path": "source/itens/porta.png", "tamanho": (1, 2), "anim_path": None, "nome": "Door", "volume": self.calcular_volume((1,2)) },
+            "privada": { "img_path": "source/itens/privada.png", "tamanho": (1, 1), "anim_path": None, "nome": "Toilet", "volume": self.calcular_volume((1,1)) },
             "rack_ISPR": { "img_path": "source/itens/rack_ISPR.png", "tamanho": (2, 2), "anim_path": None, "nome": "Rack ISPR", "volume": self.calcular_volume((2,2)) },
-            "workbench_e_kit_ferramentas": { "img_path": "source/itens/workbench_e_kit_ferramentas_EVA.png", "tamanho": (1, 1), "anim_path": None, "nome": "Workbench e Kit de Ferramentas", "volume": self.calcular_volume((1,1)) },
-            "zona_pre_EVA": { "img_path": "source/itens/zona_pre_EVA.png", "tamanho": (3, 2), "anim_path": None, "nome": "Zona Pré-EVA", "volume": self.calcular_volume((3,2)) },
-            "cama_hospitalar": { "img_path": "source/itens/cama_hospitalar.png", "tamanho": (2, 3), "anim_path": None, "nome": "Cama Hospitalar", "volume": self.calcular_volume((2,3)) },
+            "workbench_e_kit_ferramentas": { "img_path": "source/itens/workbench_e_kit_ferramentas_EVA.png", "tamanho": (1, 1), "anim_path": None, "nome": "Workbench and Toolkit", "volume": self.calcular_volume((1,1)) },
+            "zona_pre_EVA": { "img_path": "source/itens/zona_pre_EVA.png", "tamanho": (3, 2), "anim_path": None, "nome": "Pré EVA Zone", "volume": self.calcular_volume((3,2)) },
+            "cama_hospitalar": { "img_path": "source/itens/cama_hospitalar.png", "tamanho": (2, 3), "anim_path": None, "nome": "Hospitalar Bed", "volume": self.calcular_volume((2,3)) },
             "monitor" : { "img_path": "source/itens/monitor.png", "tamanho": (1, 1), "anim_path": None, "nome": "Monitor", "volume": self.calcular_volume((1,1)) },
-            "duto" : { "img_path": "source/itens/duto.png", "tamanho": (1, 1), "anim_path": None, "nome": "Duto", "volume": self.calcular_volume((1,1)) },
-            "duto_ventilador": { "img_path": "source/itens/duto_ventilador.png", "tamanho": (1, 1), "anim_path": None, "nome": "Duto Ventilador", "volume": self.calcular_volume((1,1)) }
+            "duto" : { "img_path": "source/itens/duto.png", "tamanho": (1, 1), "anim_path": None, "nome": "Duct", "volume": self.calcular_volume((1,1)) },
+            "duto_ventilador": { "img_path": "source/itens/duto_ventilador.png", "tamanho": (1, 1), "anim_path": None, "nome": "Fan Duct", "volume": self.calcular_volume((1,1)) }
         }
         self.itens_disponiveis = {}
         # Lista dos nomes base dos seus itens (sem a extensão .png)
@@ -473,7 +473,9 @@ class FaseEditavel(Cena):
 class Menu(Cena):
     def __init__(self, game):
         super().__init__(game, (0,0,0))
+        self.imagem_fundo = pygame.image.load("source/wallpaper.jpg")
         largura_tela, altura_tela = self.game.tela.get_width(), self.game.tela.get_height()
+        self.imagem_fundo = py.transform.scale(self.imagem_fundo, (largura_tela, altura_tela))
         largura_botao, altura_botao = largura_tela * 0.4, altura_tela // 10
         espacamento = 20
         pos_x = (largura_tela - largura_botao) // 2
