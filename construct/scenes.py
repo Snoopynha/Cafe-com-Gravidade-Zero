@@ -31,6 +31,7 @@ class TextInputBox:
         py.draw.rect(tela, self.cor, self.rect, 2)
         tela.blit(self.surface_texto, (self.rect.x + 5, self.rect.y + 5))
         self.rect.w = max(200, self.surface_texto.get_width() + 10)
+
 class Slider:
     def __init__(self, x, y, w, h, min_val, max_val, val_inicial):
         self.rect = py.Rect(x, y, w, h)
@@ -67,6 +68,7 @@ class Slider:
         py.draw.rect(tela, (200, 200, 200), self.knob_rect, border_radius=8)
         texto_val = fonte.render(f"{int(self.valor)}%", True, (255, 255, 255))
         tela.blit(texto_val, (self.rect.right + 15, self.rect.centery - texto_val.get_height() // 2))
+
 class Button:
     def __init__(self, x, y, acao, w=0, h=0, texto=None, cor=None, cor_hover=None, imagem_surface=None):
         self.acao = acao
@@ -99,6 +101,7 @@ class Button:
     def click(self, mouse):
         if self.rect.collidepoint(mouse) and self.acao:
             self.acao()
+
 class BotaoInventario:
     def __init__(self, item_key, item_info, pos):
         self.item_key = item_key 
@@ -106,6 +109,50 @@ class BotaoInventario:
         self.imagem = py.transform.scale(py.image.load(item_info["img_path"]).convert_alpha(), (50, 50))
         self.rect = self.imagem.get_rect(topleft=pos)
     def desenhar(self, tela):
+        tela.blit(self.imagem, self.rect)
+
+class ObjetoColocavel:
+    def __init__(self, dados_objeto):
+        """
+        Inicializa o objeto com base nos dados carregados pela FaseEditavel.
+        
+        Args:
+            dados_objeto (dict): Um dicionário contendo o tipo de rotação e as imagens originais.
+        """
+        self.tipo_rotacao = dados_objeto['tipo_rotacao']
+        self.imagens_originais = dados_objeto['imagens']
+        self.rotacao_atual = 0  # 0: Cima, 90: Esquerda, 180: Baixo, 270: Direita
+        # Define a imagem inicial e o rect
+        self.imagem = self.imagens_originais['frente']
+        self.rect = self.imagem.get_rect()
+
+    def rotacionar(self, nova_rotacao):
+        """
+        Atualiza a rotação do objeto e sua imagem correspondente.
+        Sempre rotaciona a partir da imagem original para evitar perda de qualidade.
+        """
+        self.rotacao_atual = nova_rotacao
+        
+        if self.tipo_rotacao == 'transform':
+            # Gira a imagem base usando a transformação do Pygame
+            self.imagem = py.transform.rotate(self.imagens_originais['frente'], self.rotacao_atual)
+        
+        elif self.tipo_rotacao == 'swap':
+            # Troca a imagem com base na direção (e inverte se necessário)
+            if self.rotacao_atual == 0: # Cima
+                self.imagem = self.imagens_originais['frente']
+            elif self.rotacao_atual == 180: # Baixo (inverte a imagem da frente)
+                self.imagem = py.transform.flip(self.imagens_originais['frente'], False, True)
+            elif self.rotacao_atual == 270: # Direita
+                self.imagem = self.imagens_originais['lado']
+            elif self.rotacao_atual == 90: # Esquerda (inverte a imagem de lado)
+                self.imagem = py.transform.flip(self.imagens_originais['lado'], True, False)
+
+        # Atualiza o rect para o novo tamanho da imagem rotacionada
+        self.rect = self.imagem.get_rect(center=self.rect.center)
+
+    def draw(self, tela):
+        """Desenha o objeto na tela."""
         tela.blit(self.imagem, self.rect)
 
 class Cena:
@@ -148,7 +195,7 @@ class FaseEditavel(Cena):
         self.objeto_em_mao = None
         self.objetos_do_cenario = []
         self.mapa_da_grade = [[0 for _ in range(GRID_LARGURA)] for _ in range(GRID_ALTURA)]
-        self.itens_disponiveis = {
+        dados_base_itens = { 
             "malboro": { "img_path": "source/malboro_melancia.png", "tamanho": (1, 1), "anim_path": None, "nome": "Malboro", "volume": self.calcular_volume((1,1)) },
             "gato": { "img_path": "source/gato.png", "tamanho": (2, 2), "anim_path": None, "nome": "Gato Niko", "volume": self.calcular_volume((2,2)) },
             "isac": { "img_path": "source/isac.png", "tamanho": (5, 3), "anim_path": None, "nome": "Isac", "volume": self.calcular_volume((5,3)) },
@@ -176,6 +223,49 @@ class FaseEditavel(Cena):
             "duto" : { "img_path": "source/itens/duto.png", "tamanho": (1, 1), "anim_path": None, "nome": "Duto", "volume": self.calcular_volume((1,1)) },
             "duto_ventilador": { "img_path": "source/itens/duto_ventilador.png", "tamanho": (1, 1), "anim_path": None, "nome": "Duto Ventilador", "volume": self.calcular_volume((1,1)) }
         }
+        self.itens_disponiveis = {}
+        # Lista dos nomes base dos seus itens (sem a extensão .png)
+    
+        for nome_item, info in dados_base_itens.items():
+            dados_finais = info.copy()
+            caminho_base = info['img_path']
+            caminho_lado = caminho_base.replace(".png", "_lado.png")
+
+            # 1. Pega o tamanho em blocos (ex: (2, 3)) do dicionário
+            grid_w, grid_h = info['tamanho']
+
+            # 2. Calcula o tamanho real em pixels
+            pixel_w = grid_w * self.GRID_SIZE
+            pixel_h = grid_h * self.GRID_SIZE
+        
+            # 3. Usa o tamanho em pixels correto para redimensionar a imagem de FRENTE
+            try:
+                imagem_original_frente = py.image.load(caminho_base).convert_alpha()
+                img_frente = py.transform.scale(imagem_original_frente, (pixel_w, pixel_h))
+            except FileNotFoundError:
+                print(f"AVISO: Imagem não encontrada: {caminho_base}. Criando placeholder.")
+                img_frente = py.Surface((pixel_w, pixel_h)); img_frente.fill((255,0,255))
+        
+            # Adiciona a imagem de frente já carregada (isso não estava no Game_Obj antes, mas é uma boa prática)
+            dados_finais['imagens_precarregadas'] = {"frente": img_frente}
+
+            # Verifica se a imagem de lado existe e a redimensiona com o tamanho correto
+            if os.path.exists(caminho_lado):
+                dados_finais["tipo_rotacao"] = "swap"
+             
+                # 4. Usa o tamanho em pixels correto para redimensionar a imagem de LADO
+                imagem_original_lado = py.image.load(caminho_lado).convert_alpha()
+                # NOTA: A imagem de lado pode ter proporções invertidas (ex: 3x2 em vez de 2x3)
+                # Para simplificar, vamos assumir que ela tem o mesmo tamanho de grid.
+                # Se a proporção for diferente, a lógica aqui precisaria ser mais complexa.
+                img_lado = py.transform.scale(imagem_original_lado, (pixel_w, pixel_h))
+                dados_finais['imagens_precarregadas']['lado'] = img_lado
+            else:
+                dados_finais["tipo_rotacao"] = "transform"
+
+            dados_finais['volume'] = self.calcular_volume(info['tamanho'])
+            self.itens_disponiveis[nome_item] = dados_finais
+
         self.posicao_valida = False
         self.botoes_inventario = []
         self.INVENTARIO_RECT = py.Rect(100, 100, LARGURA - 200, ALTURA - 200)
@@ -206,12 +296,14 @@ class FaseEditavel(Cena):
             if x + botao.rect.width > self.INVENTARIO_RECT.right:
                 x = x_inicial
                 y += botao.rect.height + padding
+
     def desenhar_grid(self, tela):
         largura, altura = tela.get_size()
         for x in range(0, largura, GRID_SIZE):
             py.draw.line(tela, (200, 200, 200), (x, 0), (x, altura), 1)
         for y in range(0, altura, GRID_SIZE):
             py.draw.line(tela, (200, 200, 200), (0, y), (largura, y), 1)
+
     def pode_colocar_aqui(self, grid_x, grid_y, tamanho_obj):
         obj_w, obj_h = tamanho_obj
         if not (0 <= grid_x < GRID_LARGURA - obj_w + 1 and 0 <= grid_y < GRID_ALTURA - obj_h + 1):
@@ -221,10 +313,23 @@ class FaseEditavel(Cena):
                 if self.mapa_da_grade[y][x] != 0:
                     return False
         return True
+    
     def update(self, eventos):
         super().update(eventos)
         mouse_x, mouse_y = py.mouse.get_pos()
+
         for e in eventos:
+            if e.type == py.KEYDOWN:
+                if self.estado == self.ESTADO_POSICIONANDO and self.objeto_em_mao:
+                    if e.key == py.K_w: # Rotaciona para Cima (0 graus)
+                        self.objeto_em_mao.rotacionar(0)
+                    elif e.key == py.K_d: # Rotaciona para Direita (270 graus)
+                        self.objeto_em_mao.rotacionar(270)
+                    elif e.key == py.K_s: # Rotaciona para Baixo (180 graus)
+                        self.objeto_em_mao.rotacionar(180)
+                    elif e.key == py.K_a: # Rotaciona para Esquerda (90 graus)
+                        self.objeto_em_mao.rotacionar(90)
+
             if self.estado == self.ESTADO_NORMAL:
                 if e.type == py.KEYDOWN and e.key == py.K_e:
                     self.estado = self.ESTADO_INVENTARIO
@@ -248,14 +353,14 @@ class FaseEditavel(Cena):
                     for botao in self.botoes_inventario:
                         if botao.rect.collidepoint(e.pos):
                             self.estado = self.ESTADO_POSICIONANDO
-                            info = botao.info
-                            w = info["tamanho"][0] * self.GRID_SIZE
-                            h = info["tamanho"][1] * self.GRID_SIZE
-                            self.objeto_em_mao = Game_Obj(0, 0, w, h, info["img_path"], info["tamanho"], 
-                                                          info.get("anim_path"), nome=info["nome"], volume=info["volume"])
+                            info_completa = self.itens_disponiveis[botao.item_key]
+            
+                            # Cria a instância da nova Game_Obj passando o dicionário completo
+                            self.objeto_em_mao = Game_Obj(info_completa) 
+                            self.objeto_em_mao.image.set_alpha(150) # Deixa transparente
                             self.objeto_em_mao.item_key = botao.item_key
-                            self.objeto_em_mao.image.set_alpha(90)
                             break
+
             elif self.estado == self.ESTADO_POSICIONANDO:
                 if e.type == py.KEYDOWN and e.key == py.K_ESCAPE:
                     self.estado = self.ESTADO_NORMAL
@@ -263,10 +368,13 @@ class FaseEditavel(Cena):
                 elif e.type == py.MOUSEBUTTONDOWN and e.button == 1 and self.objeto_em_mao and self.posicao_valida:
                     info = self.itens_disponiveis[self.objeto_em_mao.item_key]
                     x, y = self.objeto_em_mao.rect.topleft
-                    w, h = self.objeto_em_mao.rect.size
-                    novo_objeto = Game_Obj(x, y, w, h, info["img_path"], info["tamanho"], 
-                                           info.get("anim_path"), nome=info["nome"], volume=info["volume"])
+
+                      # Cria o objeto final que será colocado no cenário
+                    novo_objeto = Game_Obj(info, x=x, y=y)
+                    novo_objeto.rotacionar(self.objeto_em_mao.rotacao_atual) # Aplica a rotação final
+    
                     self.objetos_do_cenario.append(novo_objeto)
+
                     grid_x, grid_y = x // self.GRID_SIZE, y // self.GRID_SIZE
                     obj_w, obj_h = info["tamanho"]
                     for row in range(grid_y, grid_y + obj_h):
@@ -280,6 +388,7 @@ class FaseEditavel(Cena):
             self.objeto_em_mao.rect.topleft = (snap_x, snap_y)
             grid_x, grid_y = snap_x // self.GRID_SIZE, snap_y // self.GRID_SIZE
             self.posicao_valida = self.pode_colocar_aqui(grid_x, grid_y, self.objeto_em_mao.tamanho_grid)
+
     def drawn(self, tela):
         super().drawn(tela)
         for obj in self.objetos_do_cenario:
