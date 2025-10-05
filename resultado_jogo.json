@@ -5,16 +5,17 @@
         "volume": 500
     },
     "resultado_final": {
-        "volume_ocupado": 290,
+        "volume_ocupado": 220,
         "cumpriu_meta_de_volume": false,
         "itens_colocados": [
-            "Cama",
-            "ECLSS",
-            "Esta\u00e7\u00e3o de PC",
-            "ECLSS",
-            "Zona Pr\u00e9-EVA",
             "Rack ISPR",
-            "Privada"
+            "Arm\u00e1rio Pessoal",
+            "Painel de Controle",
+            "Monitor",
+            "Duto",
+            "Privada",
+            "Porta",
+            "Workbench e Kit de Ferramentas"
         ]
     }
 }

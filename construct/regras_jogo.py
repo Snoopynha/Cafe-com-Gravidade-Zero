@@ -8,8 +8,8 @@ class Popup:
     def __init__(self, game, titulo, linhas_texto):
         from .scenes import Button  # Importa aqui para evitar dependência circular
         largura_tela, altura_tela = game.tela.get_size()
-        self.largura = 500
-        self.altura = 300
+        self.largura = 600
+        self.altura = 350
         self.rect = py.Rect((largura_tela - self.largura) // 2, (altura_tela - self.altura) // 2, self.largura, self.altura)
         
         self.titulo = titulo
@@ -52,7 +52,7 @@ class Popup:
 
         cor_resultado = (100, 255, 100) if "Atingida" in linha_resultado else (255, 100, 100)
         txt_resultado_surf = fonte.render(linha_resultado, True, cor_resultado)
-        pos_resultado_y = y_pos + 20
+        pos_resultado_y = y_pos + 5
         tela.blit(txt_resultado_surf, (self.rect.centerx - txt_resultado_surf.get_width() // 2, pos_resultado_y))
         
         # 5. Botão "Menu"
