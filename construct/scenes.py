@@ -140,6 +140,7 @@ class FaseEditavel(Cena):
     ESTADO_NORMAL = 'NORMAL'
     ESTADO_INVENTARIO = 'INVENTARIO'
     ESTADO_POSICIONANDO = 'POSICIONANDO'
+
     def __init__(self, game, cor_fundo=(0, 0, 0), image_path=None):
         super().__init__(game, cor_fundo, image_path=image_path)
         self.GRID_SIZE = GRID_SIZE
@@ -148,14 +149,50 @@ class FaseEditavel(Cena):
         self.objetos_do_cenario = []
         self.mapa_da_grade = [[0 for _ in range(GRID_LARGURA)] for _ in range(GRID_ALTURA)]
         self.itens_disponiveis = {
-            "malboro": { "img_path": "source/malboro_melancia.png", "tamanho": (1, 1), "anim_path": None, "nome": "Malboro", "volume": 10 },
-            "gato": { "img_path": "source/gato.png", "tamanho": (2, 2), "anim_path": None, "nome": "Gato Niko", "volume": 50 },
-            "isac": { "img_path": "source/isac.png", "tamanho": (5, 3), "anim_path": None, "nome": "Isac", "volume": 150 },
-            "momo": { "img_path": "source/momo.png", "tamanho": (1, 2), "anim_path": None, "nome": "Momo", "volume": 25 }
+            "malboro": { "img_path": "source/malboro_melancia.png", "tamanho": (1, 1), "anim_path": None, "nome": "Malboro", "volume": self.calcular_volume((1,1)) },
+            "gato": { "img_path": "source/gato.png", "tamanho": (2, 2), "anim_path": None, "nome": "Gato Niko", "volume": self.calcular_volume((2,2)) },
+            "isac": { "img_path": "source/isac.png", "tamanho": (5, 3), "anim_path": None, "nome": "Isac", "volume": self.calcular_volume((5,3)) },
+            "momo": { "img_path": "source/momo.png", "tamanho": (1, 2), "anim_path": None, "nome": "Momo", "volume": self.calcular_volume((1,2)) },
+            # Intens apartir daqui
+            "airlock": { "img_path": "source/itens/airlock_e_suitports.png", "tamanho": (6, 2), "anim_path": None, "nome": "Airlock", "volume": self.calcular_volume((6,2)) },
+            "armario_comida": { "img_path": "source/itens/armario_comida.png", "tamanho": (2, 2), "anim_path": None, "nome": "Armário de Comida", "volume": self.calcular_volume((2,2)) },
+            "armario_pessoal": { "img_path": "source/itens/armario_pessoal.png", "tamanho": (2, 2), "anim_path": None, "nome": "Armário Pessoal", "volume": self.calcular_volume((2,2)) },
+            "cama_capsula": { "img_path": "source/itens/cama_capsula.png", "tamanho": (2, 3), "anim_path": None, "nome": "Cama", "volume": self.calcular_volume((2,3)) },
+            "central_computador_EVA": { "img_path": "source/itens/central_computador_EVA.png", "tamanho": (1, 1), "anim_path": None, "nome": "Central de Computador EVA", "volume": self.calcular_volume((1,1)) },
+            "eclss": { "img_path": "source/itens/eclss.png", "tamanho": (2, 2), "anim_path": None, "nome": "ECLSS", "volume": self.calcular_volume((2,2)) },
+            "equipamento_exercicio": { "img_path": "source/itens/equipamento_exercicio.png", "tamanho": (1, 1), "anim_path": None, "nome": "Equipamento de Exercício", "volume": self.calcular_volume((1,1)) },
+            "estacao_pc": { "img_path": "source/itens/estacao_pc.png", "tamanho": (2, 2), "anim_path": None, "nome": "Estação de PC", "volume": self.calcular_volume((2,2)) },
+            "laboratorio": { "img_path": "source/itens/laboratorio.png", "tamanho": (3, 2), "anim_path": None, "nome": "Laboratório", "volume": self.calcular_volume((3,2)) },
+            "mesa" : { "img_path": "source/itens/mesa.png", "tamanho": (2, 2), "anim_path": None, "nome": "Mesa", "volume": self.calcular_volume((2,2)) },
+            "painel_de_controle": { "img_path": "source/itens/painel_de_controle.png", "tamanho": (4, 2), "anim_path": None, "nome": "Painel de Controle", "volume": self.calcular_volume((4,2)) },
+            "pia": { "img_path": "source/itens/pia.png", "tamanho": (1, 1), "anim_path": None, "nome": "Pia", "volume": self.calcular_volume((1,1)) },
+            "porta": { "img_path": "source/itens/porta.png", "tamanho": (1, 2), "anim_path": None, "nome": "Porta", "volume": self.calcular_volume((1,2)) },
+            "privada": { "img_path": "source/itens/privada.png", "tamanho": (1, 1), "anim_path": None, "nome": "Privada", "volume": self.calcular_volume((1,1)) },
+            "rack_ISPR": { "img_path": "source/itens/rack_ISPR.png", "tamanho": (2, 2), "anim_path": None, "nome": "Rack ISPR", "volume": self.calcular_volume((2,2)) },
+            "workbench_e_kit_ferramentas": { "img_path": "source/itens/workbench_e_kit_ferramentas_EVA.png", "tamanho": (1, 1), "anim_path": None, "nome": "Workbench e Kit de Ferramentas", "volume": self.calcular_volume((1,1)) },
+            "zona_pre_EVA": { "img_path": "source/itens/zona_pre_EVA.png", "tamanho": (3, 2), "anim_path": None, "nome": "Zona Pré-EVA", "volume": self.calcular_volume((3,2)) },
+            "cama_hospitalar": { "img_path": "source/itens/cama_hospitalar.png", "tamanho": (2, 3), "anim_path": None, "nome": "Cama Hospitalar", "volume": self.calcular_volume((2,3)) },
+            "monitor" : { "img_path": "source/itens/monitor.png", "tamanho": (1, 1), "anim_path": None, "nome": "Monitor", "volume": self.calcular_volume((1,1)) },
+            "duto" : { "img_path": "source/itens/duto.png", "tamanho": (1, 1), "anim_path": None, "nome": "Duto", "volume": self.calcular_volume((1,1)) },
+            "duto_ventilador": { "img_path": "source/itens/duto_ventilador.png", "tamanho": (1, 1), "anim_path": None, "nome": "Duto Ventilador", "volume": self.calcular_volume((1,1)) }
         }
         self.posicao_valida = False
         self.botoes_inventario = []
         self.INVENTARIO_RECT = py.Rect(100, 100, LARGURA - 200, ALTURA - 200)
+
+    @staticmethod
+    def calcular_volume(tamanho, constante_por_bloco=10):
+        """
+        Calcula o volume de um item com base em seu tamanho em blocos.
+    
+        Args: 
+            tamanho (tuple): Uma tupla (largura, altura) representando o tamanho em blocos.
+            constante_por_bloco (int): O volume que cada bloco representa. Padrão é 10.
+        """
+        largura, altura = tamanho
+        volume = largura * altura * constante_por_bloco
+        return int(volume)
+    
     def _criar_botoes_inventario(self):
         self.botoes_inventario = []
         padding = 20
