@@ -1,6 +1,8 @@
+# core.py
+
 import pygame as py
 from construct.global_instances import ALTURA, LARGURA
-from construct.scenes import *
+from construct.scenes import * # <- scenes.py agora exporta FormularioSelecao
 py.init()
 
 tela = py.display.set_mode((LARGURA, ALTURA))
@@ -13,7 +15,10 @@ class Game:
         self.fase1 = Fase1(self)
         self.fase2 = Fase2(self)
         self.fase3 = Fase3(self)
-        self.selecao = Selecao_Habitat(self)
+        # --- ALTERAÇÃO AQUI ---
+        # Trocamos a antiga classe 'Selecao_Habitat' pela nova 'FormularioSelecao'
+        self.selecao = FormularioSelecao(self)
+        # --------------------
         self.cena_atual = self.menu
         self.running = True
     
