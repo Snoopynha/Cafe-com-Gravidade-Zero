@@ -438,14 +438,14 @@ class FaseEditavel(Cena):
             fundo_inventario.fill((10, 20, 40, 220))
             tela.blit(fundo_inventario, self.INVENTARIO_RECT.topleft)
             py.draw.rect(tela, (100, 120, 150), self.INVENTARIO_RECT, 3)
-            txt_titulo = fonte.render("Inventário", True, (255, 255, 255))
+            txt_titulo = fonte.render("Inventory", True, (255, 255, 255))
             tela.blit(txt_titulo, (self.INVENTARIO_RECT.centerx - txt_titulo.get_width() // 2, self.INVENTARIO_RECT.top + 15))
             for botao in self.botoes_inventario:
                 botao.desenhar(tela)
         info = ""
-        if self.estado == self.ESTADO_NORMAL: info = "Pressione [E] para abrir o inventário"
-        elif self.estado == self.ESTADO_INVENTARIO: info = "Pressione [E] ou [ESC] para fechar"
-        elif self.estado == self.ESTADO_POSICIONANDO: info = "Clique para colocar | [ESC] para cancelar"
+        if self.estado == self.ESTADO_NORMAL: info = "Press [E] to open the inventory | Right-click to remove item"
+        elif self.estado == self.ESTADO_INVENTARIO: info = "Press [E] or [ESC] to close the inventory"
+        elif self.estado == self.ESTADO_POSICIONANDO: info = "Click to place | [ESC] for cancel | [WASD] to rotate"
         txt_ajuda = fonte.render(info, True, (255, 255, 255))
         tela.blit(txt_ajuda, (10, 10))
         self.game_manager.desenhar_hud(tela)
@@ -459,18 +459,18 @@ class Menu(Cena):
         espacamento = 20
         pos_x = (largura_tela - largura_botao) // 2
         pos_y = (altura_tela - (2 * altura_botao + espacamento)) // 2
-        self.adicionar_botao(Button(x=pos_x, y=pos_y, w=largura_botao, h=altura_botao, texto="Jogar", 
+        self.adicionar_botao(Button(x=pos_x, y=pos_y, w=largura_botao, h=altura_botao, texto="Play", 
                                    cor=(50,205,50), cor_hover=(0,255,0),
                                    acao=lambda: setattr(game, "cena_atual", game.selecao)))
         self.adicionar_botao(Button(x=pos_x, y=pos_y + altura_botao + espacamento, w=largura_botao, h=altura_botao,
-                                   texto="Sair", cor=(200,50,50), cor_hover=(255,100,100),
+                                   texto="Exit", cor=(200,50,50), cor_hover=(255,100,100),
                                    acao=lambda: setattr(game, "running", False)))
 class FormularioSelecao(Cena):
     def __init__(self, game):
         self.caminhos_fundo = ["source/fundo_fase1.png","source/fundo_fase2.png","source/fundo_fase3.png"]
         super().__init__(game, (20, 30, 50), image_path=self.caminhos_fundo[0])
         VOLUME_HABITAT_MINIMO = 500
-        VOLUME_HABITAT_MAXIMO = 3000
+        VOLUME_HABITAT_MAXIMO = 2000
         self.fonte_form = py.font.SysFont(None, 32)
         self.habitat_selecionado = 0
         self.habitats_disponiveis = [game.fase1, game.fase2, game.fase3]
@@ -487,7 +487,7 @@ class FormularioSelecao(Cena):
                 placeholder.fill((80,80,80))
                 self.imagens_habitat.append(placeholder)
         largura_tela, altura_tela = self.game.tela.get_size()
-        self.input_nome = TextInputBox(largura_tela * 0.2, altura_tela * 0.15, 400, 40, self.fonte_form, texto_inicial="Meu Habitat")
+        self.input_nome = TextInputBox(largura_tela * 0.2, altura_tela * 0.15, 400, 40, self.fonte_form, texto_inicial="My Habitat")
         self.botoes_habitat_rects = []
         x_inicial = largura_tela * 0.2
         y_pos = altura_tela * 0.3
@@ -499,7 +499,7 @@ class FormularioSelecao(Cena):
                                     max_val=VOLUME_HABITAT_MAXIMO, 
                                     val_inicial=VOLUME_HABITAT_MINIMO)
         self.adicionar_botao(Button(x=largura_tela * 0.2, y=altura_tela * 0.8, w=150, h=50,
-                                   texto="Iniciar", cor=(50,205,50), cor_hover=(0,255,0),
+                                   texto="Start", cor=(50,205,50), cor_hover=(0,255,0),
                                    acao=self._iniciar_jogo))
         self.adicionar_botao(Button(x=30, y=30, imagem_surface=py.transform.scale(py.image.load("source/seta_voltar.png").convert_alpha(), (50, 50)), acao=lambda: setattr(game, "cena_atual", game.menu)))
     def _atualizar_fundo(self):
@@ -542,9 +542,9 @@ class FormularioSelecao(Cena):
                             self._atualizar_fundo()
     def drawn(self, tela):
         super().drawn(tela)
-        txt_nome = self.fonte_form.render("Nome:", True, (255, 255, 255))
+        txt_nome = self.fonte_form.render("Name:", True, (255, 255, 255))
         tela.blit(txt_nome, (self.input_nome.rect.x, self.input_nome.rect.y - 30))
-        txt_habitat = self.fonte_form.render("Selecione o Habitat:", True, (255, 255, 255))
+        txt_habitat = self.fonte_form.render("Select the Habitat:", True, (255, 255, 255))
         tela.blit(txt_habitat, (self.botoes_habitat_rects[0].x, self.botoes_habitat_rects[0].y - 30))
         txt_volume = self.fonte_form.render("Volume:", True, (255, 255, 255))
         tela.blit(txt_volume, (self.slider_volume.rect.x, self.slider_volume.rect.y - 30))

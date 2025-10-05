@@ -1,21 +1,23 @@
 {
     "configuracao_inicial": {
-        "nome": "Meu Habitat",
+        "nome": "My Habitat",
         "habitat_idx": "BUTIJAO",
         "volume": 500
     },
     "resultado_final": {
-        "volume_ocupado": 220,
-        "cumpriu_meta_de_volume": false,
+        "volume_ocupado": 260,
+        "cumpriu_meta_de_volume": true,
         "itens_colocados": [
-            "Rack ISPR",
-            "Arm\u00e1rio Pessoal",
-            "Painel de Controle",
-            "Monitor",
-            "Duto",
+            "Mesa",
+            "Cama Hospitalar",
+            "Pia",
             "Privada",
-            "Porta",
-            "Workbench e Kit de Ferramentas"
+            "Duto",
+            "Arm\u00e1rio Pessoal",
+            "Cama",
+            "Duto",
+            "Duto",
+            "Duto"
         ]
     }
 }

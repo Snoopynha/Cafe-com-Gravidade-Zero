@@ -50,7 +50,7 @@ class Popup:
             tela.blit(txt_surf, (self.rect.left + 30, y_pos))
             y_pos += txt_surf.get_height() + padding_linha
 
-        cor_resultado = (100, 255, 100) if "Atingida" in linha_resultado else (255, 100, 100)
+        cor_resultado = (255, 100, 100) if "Atingida" in linha_resultado else (100, 255, 100)
         txt_resultado_surf = fonte.render(linha_resultado, True, cor_resultado)
         pos_resultado_y = y_pos + 5
         tela.blit(txt_resultado_surf, (self.rect.centerx - txt_resultado_surf.get_width() // 2, pos_resultado_y))
@@ -94,9 +94,9 @@ class GameManager:
         tempo_restante = self.tempo_total - (py.time.get_ticks() - self.tempo_inicio) / 1000
         if tempo_restante < 0:
             tempo_restante = 0
-        texto_timer = f"Tempo: {int(tempo_restante // 60):02}:{int(tempo_restante % 60):02}"
+        texto_timer = f"Time: {int(tempo_restante // 60):02}:{int(tempo_restante % 60):02}"
         surf_timer = fonte.render(texto_timer, True, (255, 255, 255))
-        tela.blit(surf_timer, (tela.get_width() - surf_timer.get_width() - 20, 20))
+        tela.blit(surf_timer, (tela.get_width() - surf_timer.get_width() - 20, 90))
 
         # Volume
         texto_volume = f"Volume: {self.volume_ocupado} / {self.volume_total_habitat} m³"
@@ -120,7 +120,7 @@ class GameManager:
             
             # Define uma meta de volume, por exemplo, 80% da capacidade
             meta_volume = self.volume_total_habitat * 0.8
-            cumpriu_meta = self.volume_ocupado >= meta_volume
+            cumpriu_meta = self.volume_ocupado <= meta_volume
             
             resultado = {
                 "configuracao_inicial": self.config,
@@ -136,13 +136,13 @@ class GameManager:
             print(f"Resultado salvo em resultado_jogo.json")
             
             # --- Prepara o texto para o Popup ---
-            titulo_popup = "Tempo Esgotado!"
-            resultado_str = "Meta Atingida!" if cumpriu_meta else "Meta não atingida."
+            titulo_popup = "Time Out!"
+            resultado_str = "Goal Achived!" if cumpriu_meta else "Goal not reached!"
 
             linhas_popup = [
-                f"Nome: {self.config['nome']}",
+                f"Name: {self.config['nome']}",
                 f"Habitat: {self.config['habitat_idx']}",
-                f"Volume Ocupado: {self.volume_ocupado} / {self.volume_total_habitat} m³",
+                f"Occupied Volume: {self.volume_ocupado} / {self.volume_total_habitat} m³",
                 "", # Linha vazia para espaçamento
                 resultado_str # Apenas o resultado, para darmos um tratamento especial
             ] 
