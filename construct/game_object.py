@@ -20,6 +20,8 @@ class Game_Obj(py.sprite.Sprite):
         self.tamanho_grid = self.info.get('tamanho', (1, 1))
         self.nome = self.info.get('nome', 'Desconhecido')
         
+        self.volume = self.info.get('volume', 0)
+
         # --- LÓGICA DE ROTAÇÃO E IMAGEM ---
         self.tipo_rotacao = self.info.get('tipo_rotacao', 'transform')
         self.rotacao_atual = 0

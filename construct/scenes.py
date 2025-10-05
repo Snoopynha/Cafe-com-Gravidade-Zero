@@ -5,6 +5,7 @@ import json
 from sys import exit
 from construct.global_instances import *
 from construct.game_object import *
+from .regras_jogo import GameManager
 
 # ... (Classes de UI como TextInputBox, Slider, Button, etc. não mudam) ...
 class TextInputBox:
@@ -195,12 +196,17 @@ class FaseEditavel(Cena):
         self.objeto_em_mao = None
         self.objetos_do_cenario = []
         self.mapa_da_grade = [[0 for _ in range(GRID_LARGURA)] for _ in range(GRID_ALTURA)]
+        try:
+            with open("config_jogo.json", "r") as f:
+                config_dados = json.load(f)
+        except FileNotFoundError:
+            print("AVISO: config_jogo.json não encontrado. Usando valores padrão.")
+            config_dados = {"nome": "Padrão", "habitat_idx": "BUTIJAO", "volume": 1000}
+            
+        # 2. Cria e inicia o GameManager
+        self.game_manager = GameManager(self, config_dados)
+
         dados_base_itens = { 
-            "malboro": { "img_path": "source/malboro_melancia.png", "tamanho": (1, 1), "anim_path": None, "nome": "Malboro", "volume": self.calcular_volume((1,1)) },
-            "gato": { "img_path": "source/gato.png", "tamanho": (2, 2), "anim_path": None, "nome": "Gato Niko", "volume": self.calcular_volume((2,2)) },
-            "isac": { "img_path": "source/isac.png", "tamanho": (5, 3), "anim_path": None, "nome": "Isac", "volume": self.calcular_volume((5,3)) },
-            "momo": { "img_path": "source/momo.png", "tamanho": (1, 2), "anim_path": None, "nome": "Momo", "volume": self.calcular_volume((1,2)) },
-            # Intens apartir daqui
             "airlock": { "img_path": "source/itens/airlock_e_suitports.png", "tamanho": (6, 2), "anim_path": None, "nome": "Airlock", "volume": self.calcular_volume((6,2)) },
             "armario_comida": { "img_path": "source/itens/armario_comida.png", "tamanho": (2, 2), "anim_path": None, "nome": "Armário de Comida", "volume": self.calcular_volume((2,2)) },
             "armario_pessoal": { "img_path": "source/itens/armario_pessoal.png", "tamanho": (2, 2), "anim_path": None, "nome": "Armário Pessoal", "volume": self.calcular_volume((2,2)) },
@@ -316,78 +322,104 @@ class FaseEditavel(Cena):
     
     def update(self, eventos):
         super().update(eventos)
-        mouse_x, mouse_y = py.mouse.get_pos()
+        self.game_manager.update(eventos)
 
-        for e in eventos:
-            if e.type == py.KEYDOWN:
-                if self.estado == self.ESTADO_POSICIONANDO and self.objeto_em_mao:
-                    if e.key == py.K_w: # Rotaciona para Cima (0 graus)
-                        self.objeto_em_mao.rotacionar(0)
-                    elif e.key == py.K_d: # Rotaciona para Direita (270 graus)
-                        self.objeto_em_mao.rotacionar(270)
-                    elif e.key == py.K_s: # Rotaciona para Baixo (180 graus)
-                        self.objeto_em_mao.rotacionar(180)
-                    elif e.key == py.K_a: # Rotaciona para Esquerda (90 graus)
-                        self.objeto_em_mao.rotacionar(90)
-
-            if self.estado == self.ESTADO_NORMAL:
-                if e.type == py.KEYDOWN and e.key == py.K_e:
-                    self.estado = self.ESTADO_INVENTARIO
-                    self._criar_botoes_inventario()
-                elif e.type == py.MOUSEBUTTONDOWN and e.button == 3:
-                    objetos_a_manter = []
-                    for obj in self.objetos_do_cenario:
-                        if not obj.rect.collidepoint(e.pos):
-                            objetos_a_manter.append(obj)
-                        else:
-                            grid_x, grid_y = obj.rect.x // self.GRID_SIZE, obj.rect.y // self.GRID_SIZE
-                            obj_w, obj_h = obj.tamanho_grid
-                            for row in range(grid_y, grid_y + obj_h):
-                                for col in range(grid_x, grid_x + obj_w):
-                                    self.mapa_da_grade[row][col] = 0
-                    self.objetos_do_cenario = objetos_a_manter
-            elif self.estado == self.ESTADO_INVENTARIO:
-                if e.type == py.KEYDOWN and (e.key == py.K_e or e.key == py.K_ESCAPE):
-                    self.estado = self.ESTADO_NORMAL
-                elif e.type == py.MOUSEBUTTONDOWN and e.button == 1:
-                    for botao in self.botoes_inventario:
-                        if botao.rect.collidepoint(e.pos):
-                            self.estado = self.ESTADO_POSICIONANDO
-                            info_completa = self.itens_disponiveis[botao.item_key]
+        if self.game_manager.estado == GameManager.ESTADO_EDITANDO:
+            mouse_x, mouse_y = py.mouse.get_pos()
             
-                            # Cria a instância da nova Game_Obj passando o dicionário completo
-                            self.objeto_em_mao = Game_Obj(info_completa) 
-                            self.objeto_em_mao.image.set_alpha(150) # Deixa transparente
-                            self.objeto_em_mao.item_key = botao.item_key
-                            break
+            for e in eventos:
+                if e.type == py.KEYDOWN:
+                    if self.estado == self.ESTADO_POSICIONANDO and self.objeto_em_mao:
+                        if e.key == py.K_w: # Rotaciona para Cima (0 graus)
+                            self.objeto_em_mao.rotacionar(0)
+                        elif e.key == py.K_d: # Rotaciona para Direita (270 graus)
+                            self.objeto_em_mao.rotacionar(270)
+                        elif e.key == py.K_s: # Rotaciona para Baixo (180 graus)
+                            self.objeto_em_mao.rotacionar(180)
+                        elif e.key == py.K_a: # Rotaciona para Esquerda (90 graus)
+                            self.objeto_em_mao.rotacionar(90)
 
-            elif self.estado == self.ESTADO_POSICIONANDO:
-                if e.type == py.KEYDOWN and e.key == py.K_ESCAPE:
-                    self.estado = self.ESTADO_NORMAL
-                    self.objeto_em_mao = None
-                elif e.type == py.MOUSEBUTTONDOWN and e.button == 1 and self.objeto_em_mao and self.posicao_valida:
-                    info = self.itens_disponiveis[self.objeto_em_mao.item_key]
-                    x, y = self.objeto_em_mao.rect.topleft
+                if self.estado == self.ESTADO_NORMAL:
+                    if e.type == py.KEYDOWN and e.key == py.K_e:
+                        self.estado = self.ESTADO_INVENTARIO
+                        self._criar_botoes_inventario()
+                    elif e.type == py.MOUSEBUTTONDOWN and e.button == 3:
+                        objetos_a_manter = []
+                        for obj in self.objetos_do_cenario:
+                            if not obj.rect.collidepoint(e.pos):
+                                objetos_a_manter.append(obj)
+                            else:
+                                grid_x, grid_y = obj.rect.x // self.GRID_SIZE, obj.rect.y // self.GRID_SIZE
+                                obj_w, obj_h = obj.tamanho_grid
+                                for row in range(grid_y, grid_y + obj_h):
+                                    for col in range(grid_x, grid_x + obj_w):
+                                        self.mapa_da_grade[row][col] = 0
+                        self.objetos_do_cenario = objetos_a_manter
+                elif self.estado == self.ESTADO_INVENTARIO:
+                    if e.type == py.KEYDOWN and (e.key == py.K_e or e.key == py.K_ESCAPE):
+                        self.estado = self.ESTADO_NORMAL
+                    elif e.type == py.MOUSEBUTTONDOWN and e.button == 1:
+                        for botao in self.botoes_inventario:
+                            if botao.rect.collidepoint(e.pos):
+                                self.estado = self.ESTADO_POSICIONANDO
+                                info_completa = self.itens_disponiveis[botao.item_key]
+            
+                                # Cria a instância da nova Game_Obj passando o dicionário completo
+                                self.objeto_em_mao = Game_Obj(info_completa) 
+                                self.objeto_em_mao.image.set_alpha(150) # Deixa transparente
+                                self.objeto_em_mao.item_key = botao.item_key
+                                break
 
-                      # Cria o objeto final que será colocado no cenário
-                    novo_objeto = Game_Obj(info, x=x, y=y)
-                    novo_objeto.rotacionar(self.objeto_em_mao.rotacao_atual) # Aplica a rotação final
+                elif self.estado == self.ESTADO_POSICIONANDO:
+                    if e.type == py.KEYDOWN and e.key == py.K_ESCAPE:
+                        self.estado = self.ESTADO_NORMAL
+                        self.objeto_em_mao = None
+                    elif e.type == py.MOUSEBUTTONDOWN and e.button == 1 and self.objeto_em_mao and self.posicao_valida:
+                        info = self.itens_disponiveis[self.objeto_em_mao.item_key]
+                        x, y = self.objeto_em_mao.rect.topleft
+
+                        # Cria o objeto final que será colocado no cenário
+                        novo_objeto = Game_Obj(info, x=x, y=y)
+                        novo_objeto.rotacionar(self.objeto_em_mao.rotacao_atual) # Aplica a rotação final
     
-                    self.objetos_do_cenario.append(novo_objeto)
+                        self.objetos_do_cenario.append(novo_objeto)
 
-                    grid_x, grid_y = x // self.GRID_SIZE, y // self.GRID_SIZE
-                    obj_w, obj_h = info["tamanho"]
-                    for row in range(grid_y, grid_y + obj_h):
-                        for col in range(grid_x, grid_x + obj_w):
-                            self.mapa_da_grade[row][col] = 1
-                    self.estado = self.ESTADO_NORMAL
-                    self.objeto_em_mao = None
-        if self.estado == self.ESTADO_POSICIONANDO and self.objeto_em_mao:
-            snap_x = (mouse_x // self.GRID_SIZE) * self.GRID_SIZE
-            snap_y = (mouse_y // self.GRID_SIZE) * self.GRID_SIZE
-            self.objeto_em_mao.rect.topleft = (snap_x, snap_y)
-            grid_x, grid_y = snap_x // self.GRID_SIZE, snap_y // self.GRID_SIZE
-            self.posicao_valida = self.pode_colocar_aqui(grid_x, grid_y, self.objeto_em_mao.tamanho_grid)
+                        grid_x, grid_y = x // self.GRID_SIZE, y // self.GRID_SIZE
+                        obj_w, obj_h = info["tamanho"]
+                        for row in range(grid_y, grid_y + obj_h):
+                            for col in range(grid_x, grid_x + obj_w):
+                                self.mapa_da_grade[row][col] = 1
+                        self.estado = self.ESTADO_NORMAL
+                        self.objeto_em_mao = None
+            pass
+            
+            if self.estado == self.ESTADO_POSICIONANDO and self.objeto_em_mao:
+                snap_x = (mouse_x // self.GRID_SIZE) * self.GRID_SIZE
+                snap_y = (mouse_y // self.GRID_SIZE) * self.GRID_SIZE
+                self.objeto_em_mao.rect.topleft = (snap_x, snap_y)
+                grid_x, grid_y = snap_x // self.GRID_SIZE, snap_y // self.GRID_SIZE
+                self.posicao_valida = self.pode_colocar_aqui(grid_x, grid_y, self.objeto_em_mao.tamanho_grid)
+            pass
+
+    def reset(self):
+        """Reseta a fase para seu estado inicial para um novo jogo."""
+        print("Resetando a fase...")
+        # Limpa os objetos colocados
+        self.objetos_do_cenario = []
+        # Limpa o mapa da grade
+        self.mapa_da_grade = [[0 for _ in range(GRID_LARGURA)] for _ in range(GRID_ALTURA)]
+        # Reseta o estado inicial e o objeto na mão
+        self.estado = self.ESTADO_NORMAL
+        self.objeto_em_mao = None
+        
+        # Recria o GameManager do zero
+        try:
+            with open("config_jogo.json", "r") as f:
+                config_dados = json.load(f)
+        except FileNotFoundError:
+            config_dados = {"nome": "Padrão", "habitat_idx": "BUTIJAO", "volume": 1000}
+            
+        self.game_manager = GameManager(self, config_dados)
 
     def drawn(self, tela):
         super().drawn(tela)
@@ -416,6 +448,7 @@ class FaseEditavel(Cena):
         elif self.estado == self.ESTADO_POSICIONANDO: info = "Clique para colocar | [ESC] para cancelar"
         txt_ajuda = fonte.render(info, True, (255, 255, 255))
         tela.blit(txt_ajuda, (10, 10))
+        self.game_manager.desenhar_hud(tela)
 
 # ... (Menu e FormularioSelecao não mudam) ...
 class Menu(Cena):
@@ -466,7 +499,7 @@ class FormularioSelecao(Cena):
                                     max_val=VOLUME_HABITAT_MAXIMO, 
                                     val_inicial=VOLUME_HABITAT_MINIMO)
         self.adicionar_botao(Button(x=largura_tela * 0.2, y=altura_tela * 0.8, w=150, h=50,
-                                   texto="Jogar", cor=(50,205,50), cor_hover=(0,255,0),
+                                   texto="Iniciar", cor=(50,205,50), cor_hover=(0,255,0),
                                    acao=self._iniciar_jogo))
         self.adicionar_botao(Button(x=30, y=30, imagem_surface=py.transform.scale(py.image.load("source/seta_voltar.png").convert_alpha(), (50, 50)), acao=lambda: setattr(game, "cena_atual", game.menu)))
     def _atualizar_fundo(self):
@@ -479,6 +512,12 @@ class FormularioSelecao(Cena):
             self.imagem_fundo = None
             self.cor_fundo = (20, 30, 50)
     def _iniciar_jogo(self):
+        proxima_fase = self.habitats_disponiveis[self.habitat_selecionado]
+        # CHAMA O NOVO MÉTODO RESET NELA!
+        proxima_fase.reset()
+        # Agora sim, define como a cena atual
+        self.game.cena_atual = proxima_fase
+
         if self.habitat_selecionado == 0:
             self.inf = "BUTIJAO"
         if self.habitat_selecionado == 1:
