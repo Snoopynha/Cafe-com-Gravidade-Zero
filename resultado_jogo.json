@@ -5,18 +5,20 @@
         "volume": 500
     },
     "resultado_final": {
-        "volume_ocupado": 260,
-        "cumpriu_meta_de_volume": true,
+        "volume_ocupado": 500,
+        "cumpriu_meta_de_volume": false,
         "itens_colocados": [
-            "Mesa",
-            "Cama Hospitalar",
+            "Arm\u00e1rio de Comida",
             "Pia",
-            "Privada",
-            "Duto",
-            "Arm\u00e1rio Pessoal",
             "Cama",
-            "Duto",
-            "Duto",
+            "Monitor",
+            "Privada",
+            "Cama",
+            "Cama",
+            "Cama",
+            "Cama",
+            "Cama",
+            "Cama",
             "Duto"
         ]
     }

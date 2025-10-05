@@ -3,6 +3,7 @@
 import pygame as py 
 import json
 from sys import exit
+import os # Import 'os' para usar os.path.exists
 from construct.global_instances import *
 from construct.game_object import *
 from .regras_jogo import GameManager
@@ -275,6 +276,7 @@ class FaseEditavel(Cena):
         self.posicao_valida = False
         self.botoes_inventario = []
         self.INVENTARIO_RECT = py.Rect(100, 100, LARGURA - 200, ALTURA - 200)
+        self.item_hovered_nome = "" # NOVO: Variável para guardar o nome do item
 
     @staticmethod
     def calcular_volume(tamanho, constante_por_bloco=10):
@@ -327,6 +329,14 @@ class FaseEditavel(Cena):
         if self.game_manager.estado == GameManager.ESTADO_EDITANDO:
             mouse_x, mouse_y = py.mouse.get_pos()
             
+            # NOVO: Lógica para verificar o hover do mouse no inventário
+            if self.estado == self.ESTADO_INVENTARIO:
+                self.item_hovered_nome = "" # Reseta o nome a cada frame
+                for botao in self.botoes_inventario:
+                    if botao.rect.collidepoint((mouse_x, mouse_y)):
+                        self.item_hovered_nome = botao.info['nome']
+                        break # Para o loop assim que encontrar o item
+
             for e in eventos:
                 if e.type == py.KEYDOWN:
                     if self.estado == self.ESTADO_POSICIONANDO and self.objeto_em_mao:
@@ -442,6 +452,15 @@ class FaseEditavel(Cena):
             tela.blit(txt_titulo, (self.INVENTARIO_RECT.centerx - txt_titulo.get_width() // 2, self.INVENTARIO_RECT.top + 15))
             for botao in self.botoes_inventario:
                 botao.desenhar(tela)
+            
+            # NOVO: Desenha o nome do item na parte inferior do inventário
+            if self.item_hovered_nome:
+                fonte_pequena = py.font.SysFont(None, 32) # Usando uma fonte um pouco menor
+                txt_nome_item = fonte_pequena.render(self.item_hovered_nome, True, (200, 200, 255))
+                pos_x = self.INVENTARIO_RECT.centerx - txt_nome_item.get_width() // 2
+                pos_y = self.INVENTARIO_RECT.bottom - txt_nome_item.get_height() - 10
+                tela.blit(txt_nome_item, (pos_x, pos_y))
+
         info = ""
         if self.estado == self.ESTADO_NORMAL: info = "Press [E] to open the inventory | Right-click to remove item"
         elif self.estado == self.ESTADO_INVENTARIO: info = "Press [E] or [ESC] to close the inventory"
@@ -460,7 +479,7 @@ class Menu(Cena):
         pos_x = (largura_tela - largura_botao) // 2
         pos_y = (altura_tela - (2 * altura_botao + espacamento)) // 2
         self.adicionar_botao(Button(x=pos_x, y=pos_y, w=largura_botao, h=altura_botao, texto="Play", 
-                                   cor=(50,205,50), cor_hover=(0,255,0),
+                                   cor=(77,77,255), cor_hover=(89,89,171),
                                    acao=lambda: setattr(game, "cena_atual", game.selecao)))
         self.adicionar_botao(Button(x=pos_x, y=pos_y + altura_botao + espacamento, w=largura_botao, h=altura_botao,
                                    texto="Exit", cor=(200,50,50), cor_hover=(255,100,100),
