@@ -4,7 +4,7 @@
 ![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen)
 ![Language](https://img.shields.io/badge/Language-English-lightgrey)
 
-You can run the project using a **`.bat`** file for convenience on Windows systems, or follow the steps below.
+You can run the project using a **`start_game.bat`** file for convenience on Windows systems, or follow the steps below.
 
 ### Prerequisites
 To run this project, you will need to have Python 3.10 or newer installed.
