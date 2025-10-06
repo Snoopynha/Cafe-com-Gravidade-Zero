@@ -1,7 +1,61 @@
 # Stellar Legacy
 
+
 ![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen)
 ![Language](https://img.shields.io/badge/Language-English-lightgrey)
+
+You can run the project using a **`.bat`** file for convenience on Windows systems, or follow the steps below.
+
+### Prerequisites
+To run this project, you will need to have Python 3.10 or newer installed.
+
+Go to https://www.python.org/downloads/ to download and install it.
+
+Important (Windows): During installation, make sure to check the box that says "Add Python to PATH".
+
+Installation Steps
+Clone the Repository
+
+Open your terminal or command prompt and run the following command to clone the project:
+
+<pre>
+git clone https://github.com/your-username/stellar-legacy.git
+cd stellar-legacy </pre>
+
+Alternative: If you don't have Git, you can download the project as a ZIP file. On the repository page, click Code > Download ZIP and extract the files. Then, navigate to the extracted folder in your terminal.
+
+Create and Activate a Virtual Environment
+
+It's good practice to use a virtual environment to isolate the project's dependencies.
+
+Create the virtual environment
+python -m venv venv
+Now, activate the environment. The command varies depending on your operating system:
+
+On Windows (PowerShell):
+
+PowerShell
+
+.\venv\Scripts\Activate.ps1
+On macOS and Linux:
+
+
+source venv/bin/activate
+You will know the environment is active when you see (venv) at the beginning of your terminal line.
+
+Install the Dependencies
+
+With the virtual environment active, install the project's only dependency, Pygame:
+
+<pre>
+
+pip install pygame
+Running the Game
+After installation, run the game with the following command: </pre>
+
+python core.py
+The game window should open, and you'll be ready to start your mission!
+
 
 ### 1. Presentation
 
@@ -164,6 +218,8 @@ The ultimate question remains: can you construct a fully functional and realisti
 
 ![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen)
 ![Language](https://img.shields.io/badge/Language-Portuguese-lightgrey)
+
+
 
 ### 1. Apresentação
 
